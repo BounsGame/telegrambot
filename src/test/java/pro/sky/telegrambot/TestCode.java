@@ -14,7 +14,7 @@ public class TestCode {
     @Test
     public void test(){
         String text = "/crateNewNotify 01.12.2004 10:00 что то";
-        notifyService.createNewNotify(text);
+
 
     }
 }

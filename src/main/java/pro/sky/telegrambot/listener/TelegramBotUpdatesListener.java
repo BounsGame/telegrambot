@@ -60,13 +60,14 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                 Chat chat = update.message().chat();
                 long chatID = chat.id();
                 try {
-                    notifyService.createNewNotify(update.message().text());
+                    notifyService.createNewNotify(update.message().text(),update.message().chat().username(),chatID);
                     telegramBot.execute(new SendMessage(chatID,"создано новое напоминание"));
                 }catch (ArrayIndexOutOfBoundsException e){
                     telegramBot.execute(new SendMessage(chatID,"между командой, датой, временем и " +
                             "текстом должны быть пробелы"));
                 }catch (DateTimeParseException e){
-                    telegramBot.execute(new SendMessage(chatID,"видимо вы ошиблись в написании даты и времени"));
+                    telegramBot.execute(new SendMessage(chatID,"видимо вы ошиблись в написании даты и времени," +
+                            " формат написания должен быть такой дд.мм.гггг чч:мм"));
                 }
             }
         });
