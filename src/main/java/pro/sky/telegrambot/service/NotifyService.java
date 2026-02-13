@@ -61,6 +61,9 @@ public class NotifyService {
         if (!chat.isEmpty()) {
             String eventMessage = chat.toString();
             telegramBot.execute(new SendMessage(chat.get(0).getChatID(), eventMessage));
+            for (ChatTable chatTable : chat) {
+                chatRepository.delete(chatTable);
+            }
         }
     }
 }

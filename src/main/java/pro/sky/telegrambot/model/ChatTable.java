@@ -65,4 +65,9 @@ public class ChatTable {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString(){
+        return "вы просили напомнить " + getTime() + " " + getText();
+    }
 }
