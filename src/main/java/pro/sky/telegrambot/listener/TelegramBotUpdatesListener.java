@@ -2,13 +2,19 @@ package pro.sky.telegrambot.listener;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
+import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.service.NotifyService;
 
 import javax.annotation.PostConstruct;
+import java.time.DateTimeException;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Service
@@ -18,6 +24,8 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Autowired
     private TelegramBot telegramBot;
+    @Autowired
+    private NotifyService notifyService;
 
     @PostConstruct
     public void init() {
@@ -28,7 +36,30 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public int process(List<Update> updates) {
         updates.forEach(update -> {
             logger.info("Processing update: {}", update);
-            // Process your updates here
+
+            if(update.message().text().equals("/start")){
+                logger.info("зашло в /start");
+                Chat chat = update.message().chat();
+                long chatID = chat.id();
+                telegramBot.execute(new SendMessage(chatID,"чтобы создать новую напоминалку напиши /crateNewNotify" +
+                        " а также дату и время когда надо напомнить и текст напоминалки"));
+            }
+
+            if (update.message().text().contains("/crateNewNotify")){
+                logger.info("создаётся новое уведомление");
+                Chat chat = update.message().chat();
+                long chatID = chat.id();
+                try {
+                    notifyService.createNewNotify(update.message().text(),update.message().chat().username(),chatID);
+                    telegramBot.execute(new SendMessage(chatID,"создано новое напоминание"));
+                }catch (ArrayIndexOutOfBoundsException e){
+                    telegramBot.execute(new SendMessage(chatID,"между командой, датой, временем и " +
+                            "текстом должны быть пробелы"));
+                }catch (DateTimeParseException e){
+                    telegramBot.execute(new SendMessage(chatID,"видимо вы ошиблись в написании даты и времени," +
+                            " формат написания должен быть такой дд.мм.гггг чч:мм"));
+                }
+            }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
